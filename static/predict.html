@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Greeting VGG16</title>
+    <style>
+      * {
+        font-size: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <input id="image-selector" type="file" />
+    <button id="predict-button">Predict</button>
+    <p style="font-weight: bold">Prediction</p>
+    <p>Bacterialblight:<span id="bacterialblight-prediction"></span></p>
+    <p>Blast:<span id="blast-prediction"></span></p>
+    <p>Brownspot:<span id="brownspot-prediction"></span></p>
+    <p>Tungro:<span id="tungro-prediction"></span></p>
+    <img id="selected-image" src="" />
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script>
+      let base64Image;
+      $("#image-selector").change(function () {
+        let reader = new FileReader();
+        reader.onload = function (e) {
+          let dataURL = reader.result;
+          $("#selected-image").attr("src", dataURL);
+          base64Image = dataURL.replace("data:image/jpeg;base64,", "");
+          // console.log(base64Image)
+        };
+        reader.readAsDataURL($("#image-selector")[0].files[0]);
+        $("#bacterialblight-prediction").text("");
+        $("#blast-prediction").text("");
+        $("#brownspot-prediction").text("");
+        $("#tungro-prediction").text("");
+      });
+
+      $("#predict-button").click(function (event) {
+        let message = {
+          image: base64Image,
+        };
+        // console.log(message)
+        $.post(
+          "http://192.168.0.105:5000/predict",
+          JSON.stringify(message),
+          function (response) {
+            console.log("Hit");
+            $("#bacterialblight-prediction").text(
+              response.prediction.Bacterialblight.toFixed(6)
+            );
+            $("#blast-prediction").text(response.prediction.Blast.toFixed(6));
+            $("#brownspot-prediction").text(
+              response.prediction.Brownspot.toFixed(6)
+            );
+            $("#tungro-prediction").text(response.prediction.Tungro.toFixed(6));
+            console.log(response);
+          }
+        );
+      });
+    </script>
+  </body>
+</html>
